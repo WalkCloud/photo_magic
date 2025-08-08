@@ -11,6 +11,7 @@
     "cdk": "cdk"
   },
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.152",
     "@types/jest": "^29.5.14",
     "@types/node": "22.7.9",
     "aws-cdk": "2.1023.0",
@@ -20,9 +21,16 @@
     "typescript": "~5.6.3"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.863.0",
+    "@aws-sdk/client-s3": "^3.863.0",
+    "@aws-sdk/s3-request-presigner": "^3.863.0",
+    "@aws-sdk/util-dynamodb": "^3.863.0",
+    "@types/crypto-js": "^4.2.2",
+    "@types/jsonwebtoken": "^9.0.10",
     "aws-cdk-lib": "2.206.0",
     "axios": "^1.6.0",
     "constructs": "^10.0.0",
+    "crypto-js": "^4.2.0",
     "form-data": "^4.0.4",
     "jsonwebtoken": "^9.0.0",
     "jwk-to-pem": "^2.0.5",

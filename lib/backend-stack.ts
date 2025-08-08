@@ -254,6 +254,54 @@ export class BackendStack extends cdk.Stack {
         memorySize: 512,
     });
 
+    // Image Processing Lambda Functions
+    const removeBackgroundLambda = new lambda.Function(this, 'RemoveBackgroundLambda', {
+        runtime: lambda.Runtime.NODEJS_18_X,
+        handler: 'remove-background.handler',
+        code: lambda.Code.fromAsset('src/image-processing', {
+            bundling: {
+                image: lambda.Runtime.NODEJS_18_X.bundlingImage,
+                command: [
+                    'bash', '-c',
+                    'cp -r /asset-input/* /asset-output/ && cd /asset-output && npm install --production'
+                ],
+            },
+        }),
+        environment: {
+            FILES_TABLE: filesTable.tableName,
+            USERS_TABLE: usersTable.tableName,
+            TASKS_TABLE: tasksTable.tableName,
+            S3_BUCKET_NAME: assetsBucket.bucketName,
+            JWT_SECRET: 'your-jwt-secret-key', // Should be from environment or secrets manager
+            VOLC_ACCESS_KEY: 'your-volc-access-key', // Should be from environment or secrets manager
+            VOLC_SECRET_KEY: 'your-volc-secret-key', // Should be from environment or secrets manager
+            AWS_REGION: this.region,
+        },
+        timeout: cdk.Duration.minutes(5),
+        memorySize: 1024,
+    });
+
+    const removeBackgroundStatusLambda = new lambda.Function(this, 'RemoveBackgroundStatusLambda', {
+        runtime: lambda.Runtime.NODEJS_18_X,
+        handler: 'remove-background-status.handler',
+        code: lambda.Code.fromAsset('src/image-processing', {
+            bundling: {
+                image: lambda.Runtime.NODEJS_18_X.bundlingImage,
+                command: [
+                    'bash', '-c',
+                    'cp -r /asset-input/* /asset-output/ && cd /asset-output && npm install --production'
+                ],
+            },
+        }),
+        environment: {
+            TASKS_TABLE_NAME: tasksTable.tableName,
+            JWT_SECRET: 'your-jwt-secret-key', // Should be from environment or secrets manager
+            AWS_REGION: this.region,
+        },
+        timeout: cdk.Duration.seconds(30),
+        memorySize: 256,
+    });
+
     const fileQueryLambda = new lambda.Function(this, 'FileQueryLambda', {
         runtime: lambda.Runtime.NODEJS_18_X,
         handler: 'query.handler',
@@ -298,6 +346,14 @@ export class BackendStack extends cdk.Stack {
     filesTable.grantReadData(fileQueryLambda);
     assetsBucket.grantRead(fileQueryLambda);
 
+    // Grant permissions to image processing Lambda functions
+    filesTable.grantReadWriteData(removeBackgroundLambda);
+    usersTable.grantReadData(removeBackgroundLambda);
+    tasksTable.grantReadWriteData(removeBackgroundLambda);
+    assetsBucket.grantReadWrite(removeBackgroundLambda);
+    
+    tasksTable.grantReadData(removeBackgroundStatusLambda);
+
     // Lambda integrations
     const registerIntegration = new apigateway.LambdaIntegration(registerLambda);
     const loginIntegration = new apigateway.LambdaIntegration(loginLambda);
@@ -305,6 +361,8 @@ export class BackendStack extends cdk.Stack {
     const logoutIntegration = new apigateway.LambdaIntegration(logoutLambda);
     const fileUploadIntegration = new apigateway.LambdaIntegration(fileUploadLambda);
     const fileQueryIntegration = new apigateway.LambdaIntegration(fileQueryLambda);
+    const removeBackgroundIntegration = new apigateway.LambdaIntegration(removeBackgroundLambda);
+    const removeBackgroundStatusIntegration = new apigateway.LambdaIntegration(removeBackgroundStatusLambda);
 
     // Placeholder Lambda for other endpoints
     const placeholderLambda = new lambda.Function(this, 'PlaceholderLambda', {
@@ -362,13 +420,21 @@ export class BackendStack extends cdk.Stack {
     // Image processing routes
     const images = apiV1.addResource('images');
     const removeBackground = images.addResource('remove-background');
+    removeBackground.addMethod('POST', removeBackgroundIntegration); // Handle authorization in Lambda
     const removeBackgroundStatus = removeBackground.addResource('{taskId}');
+    removeBackgroundStatus.addMethod('GET', removeBackgroundStatusIntegration); // Handle authorization in Lambda
     const extendImage = images.addResource('extend-image');
+    extendImage.addMethod('POST', placeholderIntegration);
     const extendImageStatus = extendImage.addResource('{taskId}');
+    extendImageStatus.addMethod('GET', placeholderIntegration);
     const enhanceClarity = images.addResource('enhance-clarity');
+    enhanceClarity.addMethod('POST', placeholderIntegration);
     const enhanceClarityStatus = enhanceClarity.addResource('{taskId}');
+    enhanceClarityStatus.addMethod('GET', placeholderIntegration);
     const objectRemoval = images.addResource('object-removal');
+    objectRemoval.addMethod('POST', placeholderIntegration);
     const objectRemovalStatus = objectRemoval.addResource('{taskId}');
+    objectRemovalStatus.addMethod('GET', placeholderIntegration);
 
     // User management routes
     const users = apiV1.addResource('users');
