@@ -1,0 +1,22 @@
+{
+  "name": "photo-magic-auth-tests",
+  "version": "1.0.0",
+  "description": "Photo Magic Authentication Tests",
+  "main": "auth-test.js",
+  "scripts": {
+    "test": "node auth-test.js",
+    "test:auth": "node auth-test.js"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1490.0",
+    "axios": "^1.6.0"
+  },
+  "keywords": [
+    "test",
+    "authentication",
+    "aws",
+    "lambda"
+  ],
+  "author": "Photo Magic Team",
+  "license": "MIT"
+}

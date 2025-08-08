@@ -1,0 +1,30 @@
+{
+  "name": "photo-magic-auth",
+  "version": "1.0.0",
+  "description": "Photo Magic Authentication Service",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1490.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "jwks-rsa": "^3.0.1",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "eslint": "^8.53.0"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "cognito",
+    "authentication",
+    "jwt"
+  ],
+  "author": "Photo Magic Team",
+  "license": "MIT"
+}
